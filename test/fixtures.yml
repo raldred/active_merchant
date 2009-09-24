@@ -13,7 +13,37 @@
 authorize_net:
   login: X
   password: Y
+ 
+# Working credentials, no need to replace
+axiar:
+  login: test
+  password: test
+  
+axiar_mastercard:
+  number: 5301250070000191
+  month: 12
+  year: 2012            
+  verification_value: 419
+   
+axiar_mastercard_address:
+  address1: 25 The Larches
+  address2: Narborough
+  city: Leicester
+  zip: LE102RT
+  
+axiar_visa:
+  number: 4929421234600821
+  month: 12
+  year: 2012            
+  verification_value: 356
 
+axiar_visa_address:
+  address1: Flat 6
+  address2: Primrose Rise
+  address3: 347 Lavender Road
+  city: Northampton
+  zip: NN178YG
+        
 beanstream:
   login: merchant id
   user: username
