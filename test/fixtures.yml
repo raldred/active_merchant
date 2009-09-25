@@ -24,6 +24,7 @@ axiar_mastercard:
   month: 12
   year: 2012            
   verification_value: 419
+  type: master
    
 axiar_mastercard_address:
   address1: 25 The Larches
@@ -36,6 +37,7 @@ axiar_visa:
   month: 12
   year: 2012            
   verification_value: 356
+  type: visa
 
 axiar_visa_address:
   address1: Flat 6
@@ -43,6 +45,19 @@ axiar_visa_address:
   address3: 347 Lavender Road
   city: Northampton
   zip: NN178YG
+  
+axiar_solo:
+  number: 676779210031011316
+  month: 9
+  year: 2012
+  verification_value: 227
+  issue_number: 01
+  type: switch
+
+axiar_solo_address:
+  address1: 67b Ruddles Rise
+  city: Rugby
+  zip: CV218GH
         
 beanstream:
   login: merchant id

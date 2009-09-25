@@ -16,6 +16,9 @@ class RemoteAxiarTest < Test::Unit::TestCase
     @visa = CreditCard.new(fixtures(:axiar_visa))
     @visa_address = fixtures(:axiar_visa_address)
     
+    @solo = CreditCard.new(fixtures(:axiar_solo))
+    @solo_address = fixtures(:axiar_solo_address)
+    
     @options = { 
       :order_id => '1',
       :description => 'Store Purchase'
@@ -45,6 +48,14 @@ class RemoteAxiarTest < Test::Unit::TestCase
     assert_equal 'DECLINED', response.params['result']
   end
   
+  def test_authorised_solo_purchase
+    @options[:billing_address] = @solo_address
+    assert response = @gateway.purchase(@authorised_amount, @solo, @options)
+    assert_success response
+    assert response.test?
+    assert_equal 'SUCCESS', response.params['result']
+  end
+  
   def test_authorised_token_purchase
     @options[:billing_address] = @mastercard_address
     purchase = @gateway.authorize(@authorised_amount, @mastercard, @options)
@@ -69,6 +80,22 @@ class RemoteAxiarTest < Test::Unit::TestCase
     assert capture = @gateway.capture(@authorised_amount, auth.params['trx_id'], @options)
     assert_success capture
   end
+  
+  def test_token_authorise
+    @options[:billing_address] = @mastercard_address
+    purchase = @gateway.authorize(@authorised_amount, @mastercard, @options)
+    assert_success purchase
+    assert purchase.test?
+    
+    @options[:card_token] = purchase.params['trx_token']
+    card = CreditCard.new(:verification_value => @mastercard.verification_value)
+    
+    response = @gateway.authorize(@authorised_amount, card, @options)
+    assert_success response
+    assert response.test?
+    assert_equal 'SUCCESS', response.params['result']
+  end
+  
   
   def test_successfully_purchase_and_void
     purchase = @gateway.purchase(@authorised_amount, @mastercard, @options)

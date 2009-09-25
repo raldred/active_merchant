@@ -28,28 +28,14 @@ module ActiveMerchant
         super
       end  
       
-      def authorize(money, token_or_credit_card, options = {})
+      def authorize(money, credit_card, options = {})
         requires!(options, :order_id)
-        
-        if token_or_credit_card.is_a? String
-          request = build_authorisation_or_purchase_request_with_token(AUTH_TYPE, money, token_or_credit_card, options)
-        else
-          request = build_authorisation_or_purchase_request_with_credit_card(PRE_TYPE, money, token_or_credit_card, options)
-        end
-
-        commit(request)
+        commit(build_authorisation_or_purchase_request(PRE_TYPE, money, credit_card, options))
       end
       
-      def purchase(money, token_or_credit_card, options = {})
+      def purchase(money, credit_card, options = {})
         requires!(options, :order_id)
-
-        if token_or_credit_card.is_a? String
-          request = build_authorisation_or_purchase_request_with_transaction(AUTH_TYPE, money, token_or_credit_card, options)
-        else
-          request = build_authorisation_or_purchase_request_with_credit_card(AUTH_TYPE, money, token_or_credit_card, options)
-        end
-
-        commit(request)
+        commit(build_authorisation_or_purchase_request(AUTH_TYPE, money, credit_card, options))
       end                       
     
       def capture(money, reference, options = {})
@@ -62,15 +48,9 @@ module ActiveMerchant
         commit(build_void_or_capture_request(CANCEL_TYPE, money, reference, options))
       end
       
-      def credit(money, reference_or_credit_card, options = {})
+      def credit(money, credit_card, options = {})
         requires!(options, :order_id)
-        if reference_or_credit_card.is_a? String
-          request = build_transaction_refund_request(money, reference_or_credit_card, options)
-        else
-          request = build_refund_request(money, reference_or_credit_card, options)
-        end
-
-        commit(request)
+        commit(build_refund_request(money, credit_card, options))
       end
       
       # Is the gateway running in test mode?
@@ -80,7 +60,7 @@ module ActiveMerchant
     
       private
       
-        def build_authorisation_or_purchase_request_with_credit_card(type, money, credit_card, options)
+        def build_authorisation_or_purchase_request(type, money, credit_card, options)
           xml = Builder::XmlMarkup.new :indent => 2
           xml.instruct!
           xml.tag! :request do
@@ -94,32 +74,6 @@ module ActiveMerchant
               add_customer_information(xml,options)
               add_credit_card(xml, credit_card, options)
 
-              xml.tag! :total, amount(money)
-              xml.tag! :currency, 826
-              
-              xml.tag! :cart do
-                xml.tag! :items, nil
-                xml.tag! :cart_id, options[:order_id]
-              end              
-            end            
-          end
-          xml.target!
-        end
-        
-        def build_authorisation_or_purchase_request_with_token(type, money, token, options)
-          xml = Builder::XmlMarkup.new :indent => 2
-          xml.instruct!
-          xml.tag! :request do
-            add_authentication(xml)
-            
-            xml.tag! :options do
-              xml.tag! :type, type
-            end
-
-            xml.tag! :payment do
-              add_customer_information(xml,options)
-              add_credit_card(xml, credit_card, options)
-              
               xml.tag! :total, amount(money)
               xml.tag! :currency, 826
               
@@ -182,34 +136,7 @@ module ActiveMerchant
             end            
           end
           xml.target!
-        end
-        
-        def build_transaction_refund_request(money, authorization, options)
-          xml = Builder::XmlMarkup.new :indent => 2
-          xml.instruct!
-          xml.tag! :request do
-            add_authentication(xml)
-            
-            xml.tag! :options do
-              xml.tag! :type, REFUND_TYPE
-              xml.tag! :parent_transaction, authorization
-            end
-
-            xml.tag! :payment do
-              add_customer_information(xml,options)
-
-              xml.tag! :total, amount(money)
-              xml.tag! :currency, 826
-              
-              xml.tag! :cart do
-                xml.tag! :items, nil
-                xml.tag! :cart_id, options[:order_id]
-              end              
-            end            
-          end
-          xml.target!
-        end
-        
+        end        
         
         def add_authentication(xml)
           xml.tag! :authorisation do
@@ -229,17 +156,17 @@ module ActiveMerchant
             
               xml.tag! :number, credit_card.number
               xml.tag! :expiry do
-                xml.tag! :month, credit_card.month
+                xml.tag! :month, sprintf('%02d',credit_card.month)
                 xml.tag! :year, credit_card.year.to_s[-2,2]
               end
 
               # optional values - for UK Maestro/Solo etc
               if [ 'switch', 'solo' ].include?(card_brand(credit_card).to_s)              
                 xml.tag! :issue do
-                  xml.tag! :month, credit_card.start_month
-                  xml.tag! :year, credit_card.start_year.to_s[-2,2]
+                  xml.tag! :month, sprintf('%02d',credit_card.start_month) unless credit_card.start_month.blank?
+                  xml.tag! :year, credit_card.start_year.to_s[-2,2] unless credit_card.start_year.blank?
                 end              
-                xml.tag! :issuenumber, credit_card.issue_number unless credit_card.issue_number.blank?
+                xml.tag! :issue_number, credit_card.issue_number unless credit_card.issue_number.blank?
               end
             end
             
