@@ -3,8 +3,7 @@
 module ActiveMerchant
   module Billing
     class AxiarGateway < Gateway
-      API_URL = 'https://127.0.0.1:8081/axiar'
-      # API_URL = 'https://api.axiarpayments.co.uk:8081/axiar'
+      API_URL = 'https://api.axiarpayments.co.uk:8081/axiar'
       TDS_URL = 'https://api.axiarpayments.co.uk:8081/3dreturn'
 
       self.supported_cardtypes = [:visa, :master, :american_express, :discover, :jcb, :switch, :solo, :maestro, :diners_club]
