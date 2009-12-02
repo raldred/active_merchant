@@ -15,7 +15,7 @@ module ActiveMerchant
       self.display_name = 'Axiar'
 
       self.money_format = :cents
-      self.ssl_strict = false
+      # self.ssl_strict = false
 
       APPROVED = 'SUCCESS'
 
