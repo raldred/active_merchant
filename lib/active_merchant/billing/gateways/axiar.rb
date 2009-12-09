@@ -70,7 +70,7 @@ module ActiveMerchant
 
       # Completes a 3D Secure transaction
       def three_d_complete(pa_res, md)
-        commit(build_3d_secure_complete_request, 'PaRes' => pa_res, 'MD' => md)
+        commit(build_3d_secure_complete_request({'PaRes' => pa_res, 'MD' => md}),true)
       end
 
       # Is the gateway running in test mode?
@@ -184,8 +184,10 @@ module ActiveMerchant
           xml.target!
         end
 
-        def build_3d_secure_complete_request
-
+        def build_3d_secure_complete_request(args)
+          md = CGI.escape(args['MD'])
+          pares = CGI.escape(args['PaRes'])
+          return "MD=#{md}&PaRes=#{pares}"
         end
 
         def add_authentication(xml)
@@ -251,9 +253,9 @@ module ActiveMerchant
           xml.tag! :currency, 826
         end
 
-        def commit(request)
-
-          response = parse(ssl_post(API_URL, request))
+        def commit(request,tds = false)
+          url = tds ? TDS_URL : API_URL
+          response = parse(ssl_post(url, request))
 
           if response[:avs_result]
             avs_result = {
