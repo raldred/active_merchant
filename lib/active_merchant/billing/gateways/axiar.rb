@@ -233,7 +233,7 @@ module ActiveMerchant
           
           return unless address
           
-          xml.tag! :name, address[:name] unless address[:name].blank?
+          xml.tag! :name, options[:card_holder_name] unless options[:card_holder_name].blank?
           xml.tag! :company, address[:company] unless address[:company].blank?
           xml.tag! :email, options[:email] unless address[:email].blank?
           
